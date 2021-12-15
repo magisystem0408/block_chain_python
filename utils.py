@@ -2,7 +2,7 @@ import collections
 import hashlib
 
 # ハッシュコード生成
-print(hashlib.sha256("test".encode()).hexdigest())
+# print(hashlib.sha256("test".encode()).hexdigest())
 
 # これを使用してブロックになる
 block = {"b": 2, "a": 1}
