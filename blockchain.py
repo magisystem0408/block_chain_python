@@ -7,6 +7,9 @@ import utils
 
 logging.basicConfig(level=logging.INFO, stream=sys.stdout)
 
+MININING_DIDDICULTY = 3
+
+
 class Blockchain(object):
     def __init__(self):
         self.transaction_pool = []
@@ -43,42 +46,48 @@ class Blockchain(object):
 
         return True
 
+    def valid_proof(self, transactions, previous_hash, nonce, difficulty=MININING_DIDDICULTY):
+        guess_block = utils.sorted_dict_by_key({
+            "transactions": transactions,
+            "nonce": nonce,
+            "previous_hash": previous_hash
+        })
 
-def pprint(chains):
-    for i, chain in enumerate(chains):
-        print(f'{"=" * 25} Chain {i} {"=" * 25}')
-        '''　↑と表示する
-        ========================= Chain 1 =========================
-        '''
-        for k, v in chain.items():
+        guess_hash = self.hash(guess_block)
+        # 初めの先頭が000であればTrueを返す。
+        return guess_hash[:difficulty] == "0" * difficulty
 
-            if k == "transactions":
-                print(k)
-                for d in v:
-                    print(f'{"-" * 40}')
-                    for kk,vv in d.items():
-                        print(f"{kk:30}{vv}")
-            else:
-                print(f'{k:15}{v}')
+    def proof_of_work(self):
+        transactions = self.transaction_pool.copy()
+        # 最後にチェインしたものをとってこれる
+        previous_hash = self.hash(self.chain[-1])
 
-        print(f'{"*" * 25}')
+        nonce = 0
+        while self.valid_proof(transactions, previous_hash, nonce) is False:
+            nonce += 1
+        return nonce
 
 
 if __name__ == '__main__':
     block_chain = Blockchain()
-    pprint(block_chain.chain)
+    utils.pprint(block_chain.chain)
 
     block_chain.add_transaction("A", "B", 1.0)
 
     # 一番最後の要素をハッシュ化する
     previous_hash = block_chain.hash(block_chain.chain[-1])
-    block_chain.create_block(5, previous_hash)
-    pprint(block_chain.chain)
+
+    nonce = block_chain.proof_of_work()
+    block_chain.create_block(nonce, previous_hash)
+
+    utils.pprint(block_chain.chain)
 
     block_chain.add_transaction("C", "D", 2.0)
     block_chain.add_transaction("X", "Y", 3.0)
-
     previous_hash = block_chain.hash(block_chain.chain[-1])
-    block_chain.create_block(2, previous_hash)
 
-    pprint(block_chain.chain)
+    nonce =block_chain.proof_of_work()
+    block_chain.create_block(nonce, previous_hash)
+
+
+    utils.pprint(block_chain.chain)
